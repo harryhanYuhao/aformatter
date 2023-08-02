@@ -1,10 +1,10 @@
-CC=gcc
+CC=clang
 
-CWARNINGS=-Wall -Wextra -Wpedantic -Wformat=2 -Wswitch-default -Wpointer-arith -Wbad-function-cast -Wstrict-overflow=5 -Wstrict-prototypes -Winline -Wundef -Wnested-externs -Wcast-qual -Wshadow -Wunreachable-code -Wlogical-op -Wfloat-equal -Wstrict-aliasing=2 -Wredundant-decls -Wold-style-definition 
+CWARNINGS=-Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-align \
 
-COPTIMISING=-O0 -ggdb3 -fno-omit-frame-pointer -ffloat-store -fno-common -fstrict-aliasing -g
+COPTIMISING=-O0 -ggdb3 -fno-omit-frame-pointer -fno-common -fstrict-aliasing 
 
-CFLAGS=-std=c11 $(CWARNINGS) $(COPTIMISING) -lm
+CFLAGS=-std=c11 $(CWARNINGS) $(COPTIMISING)
 
 INSTALL_DIR=$(HOME)/psu/bin
 
@@ -14,22 +14,27 @@ RED=\033[0;31m
 BLUE=\033[0;34m
 NC=\033[0m
 
-aformatter: main.o utils.o
+aformatter: main.o utils.o globals.o
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Linking: Producing executable$(NC)"
-	@$(CC) $(CFLAGS) -o aformatter main.o utils.o
+	@$(CC) $(CFLAGS) -o aformatter main.o utils.o globals.o
 	@echo -e "------------------------------------------"
 
-main.o: main.c 
+main.o: main.c utils.h globals.h
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Compiling: main.c$(NC)"
 	@$(CC) $(CFLAGS) -c main.c
 
 
-utils.o: utils.c utils.h
+utils.o: utils.c utils.h globals.h
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Compiling: utils.c$(NC)"
 	@$(CC) $(CFLAGS) -c utils.c
+
+globals.o: globals.c globals.h
+	@echo -e "------------------------------------------"
+	@echo -e "$(BLUE)Compiling: globals.c$(NC)"
+	@$(CC) $(CFLAGS) -c globals.c
 
 clean:
 	rm -f *.o aformatter

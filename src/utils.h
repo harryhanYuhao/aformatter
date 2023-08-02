@@ -7,6 +7,15 @@
 #include <stdio.h>
 #include <string.h>
 
+// token status:
+// -1 undefined
+// 0 comments: it belowns to comments
+// 1 section header
+// 2 keywords, register, etc
+// 3 labels
+// 10 new line
+// 32 space 
+
 // for holding each line of the string text
 // len is number of character excluding \0
 // It is a linked-list
@@ -14,6 +23,7 @@ struct strbuf{
   uint64_t len;  // the length of the current string
   char *sptr; // string pointer
   struct strbuf* next;
+  char token;  // record the token status of this string
 };
 
 // for holding the whole file of the text
@@ -29,6 +39,8 @@ void strbuf_append(struct strbuf *, char *, int);
 int strbuf_is_empty_string(struct strbuf *);
 int strbuf_is_linebreak(struct strbuf *);
 int strbuf_is_space(struct strbuf *);
+int strbuf_is_section(struct strbuf *);
+void strbuf_insert_after(struct strbuf *, struct strbuf *);
 void strbuf_delete_between(struct strbuf *, struct strbuf *);
 void strbuf_remove_next(struct strbuf *);
 void strbuf_free(struct strbuf *);

@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "globals.h"
 
 void strbuf_init(struct strbuf **sb)
 {
@@ -6,6 +7,7 @@ void strbuf_init(struct strbuf **sb)
   (*sb)->len=0;
   (*sb)->sptr = NULL;
   (*sb)->next = NULL;
+  (*sb)->token = -1;
 }
 
 // needs improvement:
@@ -18,6 +20,14 @@ void strbuf_append(struct strbuf * sb, char * in, int len)
   memcpy(&new[sb->len], in, len); // From <string.h>
   sb->sptr = new;
   sb->len += len;
+}
+
+// insert content after location
+// both must be initialized
+void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
+{
+  content->next = location->next;
+  location->next = content;
 }
 
 // check if strbuf contains nothing.
@@ -42,6 +52,13 @@ int strbuf_is_space(struct strbuf *sb){
   return 0;
 }
 
+int strbuf_is_section(struct strbuf *sb)
+{
+  if(sb->len > 1 && *(sb->sptr) == '.')
+    return 1;
+  return 0;
+}
+
 void strbuf_free(struct strbuf *sb)
 {
   sb->len=0;
@@ -59,7 +76,7 @@ void strbuf_remove_next(struct strbuf * sb)
   sb->next = nextNext;
 }
 
-/// TEST: PASSED PRELIMILARY TESTING
+// TEST: PASSED PRELIMILARY TESTING
 // delete from begin (non inclusive) to end (non-inclusive)
 void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
 {

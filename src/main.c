@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "globals.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
@@ -72,24 +73,50 @@ void strip_initial_space(struct strbuf * sbptr)
   }
 }
 
-void format_strbuf_list(struct strbuf *sbptr)
+// remove extra line breaks if there is three or more consecutive line breaks
+// reduce number of consecutive linebreaks to two
+void strip_repetitive_linebreaks(struct strbuf * sbptr)
 {
-
-  strip_trailing_space(sbptr);
-  strip_initial_space(sbptr);
-
-  // remove extra line breaks if there is three consecutive line breaks
   struct strbuf * cur;
   cur = sbptr;
-  while(cur->next!=NULL){
+  for (;cur->next != NULL; cur = cur->next){
     if (strbuf_is_linebreak(cur)){
-      while (strbuf_is_linebreak(cur->next)&&strbuf_is_linebreak(cur->next->next))
+      while (strbuf_is_linebreak(cur->next)
+            &&strbuf_is_linebreak(cur->next->next))
         strbuf_remove_next(cur);
     }
     cur=cur->next; 
   }
 }
 
+/// assigne token code for 
+void strbuf_tokenisation(struct strbuf *sbptr)
+{
+  struct strbuf *cur = sbptr;
+  for (;cur->next != NULL; cur = cur->next){
+    if (strbuf_is_section(cur)){
+      cur->token = 1;
+    } else if (strbuf_is_space(cur)){
+      cur->token = 32;
+    } else if (strbuf_is_linebreak(cur)){
+      cur->token = 10;
+    } else if (cur->token == -1){
+      cur -> token = 2;
+    }
+  }
+}
+
+void format_strbuf_list(struct strbuf *sbptr)
+{
+  strip_trailing_space(sbptr);
+  strip_initial_space(sbptr);
+  strip_repetitive_linebreaks(sbptr);
+  
+  strbuf_tokenisation(sbptr);
+}
+
+// create a linked-list with size of ten
+// each holding different ascii character
 void test(void){
   struct strbuf **list = (struct strbuf **) calloc(10, sizeof(struct strbuf**));
   for (int i = 0; i < 10; i++){
@@ -124,6 +151,6 @@ int main(int argc, char * argv[])
   format_strbuf_list(sbp);             
 
   print_strbuf_list(sbp);  
-                               
+
   return 0;
 }

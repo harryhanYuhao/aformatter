@@ -38,3 +38,8 @@ globals.o: globals.c globals.h
 
 clean:
 	rm -f *.o aformatter
+
+
+
+
+

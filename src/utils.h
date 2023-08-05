@@ -36,15 +36,20 @@ struct strbuf{
 
 void strbuf_init(struct strbuf **);
 void strbuf_append(struct strbuf *, char *, int);
+void strbuf_merge(struct strbuf *, struct strbuf *);
+void strbuf_self_delete(struct strbuf *);
 int strbuf_is_empty_string(struct strbuf *);
 int strbuf_is_linebreak(struct strbuf *);
 int strbuf_is_space(struct strbuf *);
 int strbuf_is_section(struct strbuf *);
+int strbuf_is_comment(struct strbuf *);
 void strbuf_insert_after(struct strbuf *, struct strbuf *);
 void strbuf_delete_between(struct strbuf *, struct strbuf *);
+void strip_null_strbuf(struct strbuf **);
 void strbuf_remove_next(struct strbuf *);
 void strbuf_free(struct strbuf *);
 void print_strbuf_list(struct strbuf *);
+void debug_print(struct strbuf *);
 
 // void textbuf_init(struct textbuf *);
 // void textbuf_append(struct textbuf *, struct strbuf *);

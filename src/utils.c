@@ -22,6 +22,40 @@ void strbuf_append(struct strbuf * sb, char * in, int len)
   sb->len += len;
 }
 
+// merge two strbuf, the first shall preceed the second
+void strbuf_merge(struct strbuf *sb1, struct strbuf *sb2)
+{
+  if  (sb1->next != sb2){ 
+    exit_program("strbuf_merged failed, the second strbuf does not follows the first", -1);
+  }
+  strbuf_append(sb1, sb2->sptr, sb2->len);
+  sb1->next = sb2->next;
+  strbuf_free(sb2);
+}
+
+// Copy the content of sb2 to sb1. sb1 and sb2 are independent. Free sb1->sptr
+void strbuf_copy(struct strbuf *sb1, struct strbuf *sb2)
+{
+  if (sb1 == NULL || sb2 == NULL)
+    return;
+  sb1->len = sb2->len;
+  sb1->token = sb2->token;
+  sb1->next = sb2->next;
+  sb1->sptr = (char *)calloc(sb2->len, 1);
+  memmove(sb1->sptr, sb2->sptr, sb2->len);
+}
+
+// Make sb exactly the same as sb->next, and free appropraite memory
+// as if sb is deleted
+void strbuf_self_delete(struct strbuf *sb)
+{
+  if (sb == NULL) 
+    return;
+  struct strbuf *tmp = sb->next;
+  strbuf_copy(sb, sb->next); 
+  strbuf_free(tmp);
+}
+
 // insert content after location
 // both must be initialized
 void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
@@ -34,6 +68,8 @@ void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
 
 int strbuf_is_empty_string(struct strbuf *sb)
 {
+  if (sb->next == NULL)
+    return 1;
   if (sb->len==0)
     return 1;
   return 0;
@@ -41,12 +77,16 @@ int strbuf_is_empty_string(struct strbuf *sb)
 
 // check if strbuf only contains linebreak
 int strbuf_is_linebreak(struct strbuf *sb){
+  if (sb == NULL)
+    return 0;
   if(sb->len == 1 && *(sb->sptr) == 10)
     return 1;
   return 0;
 }
 
 int strbuf_is_space(struct strbuf *sb){
+  if (sb == NULL)
+    return 0;
   if(sb->len == 1 && *(sb->sptr) == ' ')
     return 1;
   return 0;
@@ -54,9 +94,51 @@ int strbuf_is_space(struct strbuf *sb){
 
 int strbuf_is_section(struct strbuf *sb)
 {
+  if (sb == NULL || sb->sptr == NULL)
+    return 0;
   if(sb->len > 1 && *(sb->sptr) == '.')
-    return 1;
+  //   return 1;
   return 0;
+}
+
+// return the number of strbuf there are between sptr and \n or EOF
+// exclusive on both end
+// (cur) !a! \n wou return 1
+static int strbuf_to_endofline(struct strbuf *sptr){
+  int counter = 0;
+  struct strbuf *cur = sptr;
+  while (cur->next != NULL){
+    if (*(cur->sptr) == 10){
+      break;
+    }
+    ++counter;
+    cur = cur->next;
+  }
+  return counter;
+}
+
+  // note strbuf_is_comment return 0 if it is not comment 
+  // it return a positive int if it is comment, 
+  // the int tells how long the comment is (in terms of tokens)
+  // tmp = the number of tokens the comments consists of, including 
+  // the comment sign
+// exclusive on both end
+// neither the line break token nor the current token counts
+int strbuf_is_comment(struct strbuf *sptr){
+  int res = 0;
+  struct strbuf *cur = sptr;
+  if (comment_string_length == 1){
+    if(cur->len == 1 && *(cur->sptr) == comment_string_first_char){
+      res = strbuf_to_endofline(cur);
+    }
+  }
+  else if (comment_string_length == 2){
+    if(cur->len == 1 && *(cur->sptr) == comment_string_first_char && *(cur->next->sptr) == comment_string_second_char)
+    {
+      res = strbuf_to_endofline(cur);
+    }
+  }
+  return res;
 }
 
 void strbuf_free(struct strbuf *sb)
@@ -64,13 +146,21 @@ void strbuf_free(struct strbuf *sb)
   sb->len=0;
   free(sb->sptr);
   sb->sptr = NULL;
+  free(sb);
 }
 
 // remove the next of the linked list, while linking the first the the next's next
 void strbuf_remove_next(struct strbuf * sb)
 {
+  // if sb is the last in the list
   if (sb->next == NULL)
     return;
+  // if sb is the second last in the list
+  if (sb->next->next == NULL){
+    strbuf_free(sb->next);
+    sb->next = NULL;
+    return;
+  }
   struct strbuf * nextNext = sb->next->next;
   strbuf_free(sb->next);
   sb->next = nextNext;
@@ -80,22 +170,61 @@ void strbuf_remove_next(struct strbuf * sb)
 // delete from begin (non inclusive) to end (non-inclusive)
 void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
 {
-  struct strbuf *cur = begin->next;
-  while (cur != end){
-    struct strbuf *next = cur ->next;
-    strbuf_free(cur);
-    cur = next;
+  struct strbuf *cur = begin;
+  while (cur->next != end){
+    strbuf_remove_next(cur);
   }
 }
 
-void print_strbuf_list(struct strbuf *sb){
-    struct strbuf *cur = sb;
+// Starting from sbptr, delete all null strbuf
+// if sbptr itself is null, modified it so that it become the closest non-null strbuf
+void strip_null_strbuf(struct strbuf ** sbpp)
+{
+  // first remove and modifies sbpp if it is null
+  struct strbuf *cur = *sbpp;
+  while(strbuf_is_empty_string(cur)){
+    struct strbuf *tmp = cur;
+    cur = cur->next;
+    strbuf_free(tmp);
+  }
+  *(sbpp) = cur;
+  while (cur->next->next != NULL){
+    if (strbuf_is_empty_string(cur->next)){
+      strbuf_remove_next(cur);
+    }
+    cur = cur->next;
+  }
+}
+
+void print_strbuf_list(struct strbuf *sb)
+{
+  struct strbuf *cur = sb;
   while (1){
     if (cur->sptr!=NULL){
       // syscall, requires unistd.h
       char tmp [] = {'!'};
       write(STDOUT_FILENO, tmp, 1);
       write(STDOUT_FILENO, cur->sptr, cur->len);
+    }
+    if (cur->next==NULL)
+      break;
+    cur=cur->next;
+  }
+}
+
+void debug_print(struct strbuf *sb)
+{
+  struct strbuf *cur = sb;
+  while (1){
+    if (cur->sptr!=NULL){
+      // syscall, requires unistd.h
+      if (*(cur->sptr)==10){
+        write(STDOUT_FILENO, "!\n", 2);
+      } else{
+        char tmp[5];
+        snprintf(tmp, 5, "!%lu", cur->len);
+        write(STDOUT_FILENO, tmp, strlen(tmp));
+      }
     }
     if (cur->next==NULL)
       break;

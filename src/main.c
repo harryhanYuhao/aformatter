@@ -61,6 +61,12 @@ void strip_initial_space(struct strbuf * sbptr)
 {
   struct strbuf *cur = sbptr;
   struct strbuf *poke = sbptr;
+  //
+  // first take care of the space at the beginning of the document
+  while (strbuf_is_space(cur)){
+    // self delete make cur equal to that of cur->next
+    strbuf_self_delete(cur);
+  }
 
   for (;cur->next != NULL; cur = cur->next){
     if (!strbuf_is_linebreak(cur))
@@ -77,42 +83,69 @@ void strip_initial_space(struct strbuf * sbptr)
 // reduce number of consecutive linebreaks to two
 void strip_repetitive_linebreaks(struct strbuf * sbptr)
 {
-  struct strbuf * cur;
-  cur = sbptr;
-  for (;cur->next != NULL; cur = cur->next){
+  struct strbuf * cur = sbptr;
+  while (1){
     if (strbuf_is_linebreak(cur)){
-      while (strbuf_is_linebreak(cur->next)
-            &&strbuf_is_linebreak(cur->next->next))
+      while 
+        (strbuf_is_linebreak(cur->next) && strbuf_is_linebreak(cur->next->next))
         strbuf_remove_next(cur);
     }
-    cur=cur->next; 
+    if (cur->next==NULL)
+      break;
+    // to avoid segfault:
+    // can not be written as if(cur->next == NULL || cur->next->next==NULL)
+    if (cur->next->next==NULL)
+      break;
+    cur = cur->next;
   }
 }
 
-/// assigne token code for 
+/// assigne token code for each strbuf .
 void strbuf_tokenisation(struct strbuf *sbptr)
 {
   struct strbuf *cur = sbptr;
-  for (;cur->next != NULL; cur = cur->next){
-    if (strbuf_is_section(cur)){
+  int tmp;
+  while (cur->next!=NULL){
+    if (cur->len == 0 || cur -> sptr == NULL);
+      // note strbuf_is_comment return 0 if it is not comment 
+      // it return a positive int if it is comment, 
+      // the int tells how long the comment is (in terms of tokens)
+      // tmp = the number of tokens the comments consists of, not including
+      // the comment sign
+    else if ((tmp = strbuf_is_comment(cur))){
+      cur->token = 0; 
+      for (int i = 0; i < tmp-1; i++){
+        strbuf_merge(cur, cur->next);
+      }
+    }
+    else if (strbuf_is_section(cur)){
       cur->token = 1;
-    } else if (strbuf_is_space(cur)){
+    }
+    else if (strbuf_is_space(cur)){
       cur->token = 32;
     } else if (strbuf_is_linebreak(cur)){
       cur->token = 10;
     } else if (cur->token == -1){
       cur -> token = 2;
     }
+    cur=cur->next;
   }
 }
 
-void format_strbuf_list(struct strbuf *sbptr)
+// the initial sbptr may contain null pointers
+// check and remove all null elements in the list
+
+void format_strbuf_list(struct strbuf **sbpp)
 {
-  strip_trailing_space(sbptr);
-  strip_initial_space(sbptr);
-  strip_repetitive_linebreaks(sbptr);
+
+  struct strbuf * sbp = *sbpp;
+  strip_trailing_space(sbp);
+  strip_initial_space(sbp);
+  strip_repetitive_linebreaks(sbp);
   
-  strbuf_tokenisation(sbptr);
+  strip_null_strbuf(sbpp);
+  
+  strbuf_tokenisation(sbp);
 }
 
 // create a linked-list with size of ten
@@ -131,8 +164,8 @@ void test(void){
     char tmp = 40+i;
     strbuf_append(list[i], &tmp, 1);
   }
+  strbuf_delete_between(list[0], list[2]);
 
-  strbuf_delete_between(*list, list[3]);
   print_strbuf_list(*list);
 }
 
@@ -148,9 +181,10 @@ int main(int argc, char * argv[])
   strbuf_init(&sbp);          
 
   read_to_strbuf(sbp, argv[1]);
-  format_strbuf_list(sbp);             
+  format_strbuf_list(&sbp);             
 
   print_strbuf_list(sbp);  
+  debug_print(sbp);
 
   return 0;
 }

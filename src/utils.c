@@ -166,8 +166,7 @@ void strbuf_remove_next(struct strbuf * sb)
   sb->next = nextNext;
 }
 
-// TEST: PASSED PRELIMILARY TESTING
-// delete from begin (non inclusive) to end (non-inclusive)
+// delete from begin (non-inclusive) to end (non-inclusive)
 void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
 {
   struct strbuf *cur = begin;
@@ -178,6 +177,7 @@ void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
 
 // Starting from sbptr, delete all null strbuf
 // if sbptr itself is null, modified it so that it become the closest non-null strbuf
+// return the number fo null strbuf stripped.
 int strip_null_strbuf(struct strbuf * sbp)
 {
   int res = 0;
@@ -228,6 +228,49 @@ void debug_print(struct strbuf *sb)
       break;
     cur=cur->next;
   }
+}
+
+// load file `name` intoo linked list and break them to 
+// preliminary tokens
+// break all input into tokens and read into strbuf
+// any character between spaces or new line are considered a token 
+// (excluding spaces and new lines)
+// a single space and a single linebreak are considered as tokens
+// struct strbuf* tbptr must be a pointer pointed to an initialized strbuf
+int read_to_strbuf(struct strbuf* sbptr, char * name)
+{
+  int fd = open(name, O_RDONLY);
+
+  struct strbuf *cur = sbptr;
+  struct strbuf *initial = sbptr;
+
+  char tmp = ' ';
+  char pre= '\0'; 
+  while (read(fd, &tmp, 1)>0){
+    int newList = 0;
+    // note in the algorithm the first strbuf will be a null strbuf
+    // it needs to be removed 
+    if (tmp == ' ' || tmp == '\n' || tmp == '\t'|| pre == ' ' || pre == '\n' || pre == '\t')
+      newList = 1;
+    if(newList){
+      newList = 0;
+      struct strbuf *pre_strbuf = cur;
+      strbuf_init(&cur);
+      pre_strbuf->next = cur;
+    }
+    strbuf_append(cur, &tmp, 1);
+    pre = tmp;
+  }
+
+  // During read process null strbuf may be introduced.
+  strip_null_strbuf(initial);
+
+  if (close(fd)==-1){
+    char errorString[64]; 
+    snprintf(errorString, 64, "fail to open file %s", name);
+    exit_program(errorString, -1);
+  }
+  return 0;
 }
 
 void exit_program(char *s, int exit_num)

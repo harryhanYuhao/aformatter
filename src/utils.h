@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTIls_H 1
 
+// for open() syscall in int read_to_strbuf()
+#include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -51,9 +53,7 @@ void strbuf_free(struct strbuf *);
 void print_strbuf_list(struct strbuf *);
 void debug_print(struct strbuf *);
 
-// void textbuf_init(struct textbuf *);
-// void textbuf_append(struct textbuf *, struct strbuf *);
-// void textbuf_free(struct textbuf *);
+int read_to_strbuf(struct strbuf *, char*);
 
 void exit_program(char *, int);
 

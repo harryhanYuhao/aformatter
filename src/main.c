@@ -35,7 +35,6 @@ void test(void){
     strbuf_append(list[i], &tmp, 1);
   }
   // strbuf_delete_between(list[0], list[2]);
-  strbuf_presert_before(*list, global_tab);
 
   print_strbuf_list(*list);
 }

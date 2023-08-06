@@ -107,8 +107,7 @@ void format_insert_spaces(struct strbuf *sbptr)
   struct strbuf *cur = sbptr;
   while(cur->next != NULL){
     if (cur->token == 1){
-      strbuf_presert_n_spaces_before(cur, 4);
-      cur = cur->next;
+      strbuf_presert_n_spaces_before(&cur, 4);
     }
     cur = cur->next;
   }

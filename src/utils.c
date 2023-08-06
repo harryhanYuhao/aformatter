@@ -72,24 +72,28 @@ void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
 // which points to the content, and content inserted after the location,
 // pointing to the next appropraite struct
 // to use in loop like while (cur->next != NULL) {...; cur= cur->next}
-// when using 
-void strbuf_presert_before(struct strbuf *location, struct strbuf * content)
+// when using it, it requires to pass int struct strbuf **
+// the *location may be changed, the the struct would contain exactly the same element as.
+void strbuf_presert_before(struct strbuf **location, struct strbuf * content)
 {
-  // struct strbuf * tmp = *location;
-  if (location == NULL || content == NULL)
+  struct strbuf * cur = *location;
+
+  if (cur == NULL || content == NULL)
     exit_program("arguments not initialized for void strbuf_presert_before()", -1);
   struct strbuf *tmp;
   strbuf_init(&tmp);
-  strbuf_copy(tmp, location);
+  strbuf_copy(tmp, cur);
 
   // we have copied the content, the next pointer is not adjusted
-  strbuf_copy(location, content);
-  location->next = tmp->next;
+  strbuf_copy(cur, content);
+  cur->next = tmp->next;
   strbuf_copy(content, tmp);
-  strbuf_insert_after(location, content);
+  strbuf_insert_after(cur, content);
+  
+  *(location) = cur->next;
 }
 
-void strbuf_presert_n_spaces_before(struct strbuf *sbptr, int n)
+void strbuf_presert_n_spaces_before(struct strbuf **sbptr, int n)
 {
   struct strbuf *spaces;
   strbuf_init(&spaces);

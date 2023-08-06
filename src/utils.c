@@ -34,6 +34,7 @@ void strbuf_merge(struct strbuf *sb1, struct strbuf *sb2)
 }
 
 // Copy the content of sb2 to sb1. sb1 and sb2 are independent. Free sb1->sptr
+// both must be initilized
 void strbuf_copy(struct strbuf *sb1, struct strbuf *sb2)
 {
   if (sb1 == NULL || sb2 == NULL)
@@ -41,6 +42,8 @@ void strbuf_copy(struct strbuf *sb1, struct strbuf *sb2)
   sb1->len = sb2->len;
   sb1->token = sb2->token;
   sb1->next = sb2->next;
+  if (sb1->sptr != NULL)
+    free(sb1->sptr);
   sb1->sptr = (char *)calloc(sb2->len, 1);
   memmove(sb1->sptr, sb2->sptr, sb2->len);
 }
@@ -62,6 +65,39 @@ void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
 {
   content->next = location->next;
   location->next = content;
+}
+
+// both must be initialzied
+// this function make location hold the value of content, 
+// which points to the content, and content inserted after the location,
+// pointing to the next appropraite struct
+// to use in loop like while (cur->next != NULL) {...; cur= cur->next}
+// when using 
+void strbuf_presert_before(struct strbuf *location, struct strbuf * content)
+{
+  // struct strbuf * tmp = *location;
+  if (location == NULL || content == NULL)
+    exit_program("arguments not initialized for void strbuf_presert_before()", -1);
+  struct strbuf *tmp;
+  strbuf_init(&tmp);
+  strbuf_copy(tmp, location);
+
+  // we have copied the content, the next pointer is not adjusted
+  strbuf_copy(location, content);
+  location->next = tmp->next;
+  strbuf_copy(content, tmp);
+  strbuf_insert_after(location, content);
+}
+
+void strbuf_presert_n_spaces_before(struct strbuf *sbptr, int n)
+{
+  struct strbuf *spaces;
+  strbuf_init(&spaces);
+  spaces->len = n;
+  spaces->sptr = (char *) calloc(n, 1);
+  char tmp[12] = "            ";
+  memmove(spaces->sptr, tmp, n);
+  strbuf_presert_before(sbptr, spaces);
 }
 
 // check if strbuf contains nothing.
@@ -87,7 +123,7 @@ int strbuf_is_linebreak(struct strbuf *sb){
 int strbuf_is_space(struct strbuf *sb){
   if (sb == NULL)
     return 0;
-  if(sb->len == 1 && *(sb->sptr) == ' ')
+  if(sb->len == 1 && *(sb->sptr) == 32)
     return 1;
   return 0;
 }
@@ -97,6 +133,16 @@ int strbuf_is_section(struct strbuf *sb)
   if (sb == NULL || sb->sptr == NULL)
     return 0;
   if(sb->len > 1 && *(sb->sptr) == '.')
+    return 1;
+  return 0;
+}
+
+
+int strbuf_is_label(struct strbuf *sb)
+{
+  if (sb == NULL || sb->sptr == NULL)
+    return 0;
+  if (sb->len>1 && (sb->sptr)[sb->len-1] == ':')
     return 1;
   return 0;
 }
@@ -273,13 +319,20 @@ int read_to_strbuf(struct strbuf* sbptr, char * name)
   return 0;
 }
 
+
+// if exit_num > 0, there is no system error 
+// or system error was catched by code.
 void exit_program(char *s, int exit_num)
 {
   if (exit_num == 0)
     exit(0);  // from stdlib.h
-
-  perror(s); // stdio.h
-  exit(1);
+  if (exit_num < 0){
+    perror(s); // stdio.h
+    exit(1);
+  } else{
+    printf("%s\n", s);
+    exit(1);
+  }
 }
 
 // an implementation of getline()

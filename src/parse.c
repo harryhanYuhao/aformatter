@@ -66,7 +66,9 @@ void strbuf_tokenisation(struct strbuf *sbptr)
   struct strbuf *cur = sbptr;
   int tmp;
   while (cur->next!=NULL){
-    if (cur->len == 0 || cur -> sptr == NULL);
+    if (strbuf_is_null_strbuf(cur)){
+      strbuf_self_delete(cur);
+    }
       // note strbuf_is_comment return 0 if it is not comment 
       // it return a positive int if it is comment, 
       // the int tells how long the comment is (in terms of tokens)
@@ -81,13 +83,33 @@ void strbuf_tokenisation(struct strbuf *sbptr)
     else if (strbuf_is_section(cur)){
       cur->token = 1;
     }
+    else if (strbuf_is_label(cur)){
+      cur->token = 3;
+    }
     else if (strbuf_is_space(cur)){
-      cur->token = 32;
+      // cur->token = 32;
+      // when it deletes itself it become the next token: need not cur = cur->next
+      strbuf_self_delete(cur);
+      continue;
     } else if (strbuf_is_linebreak(cur)){
       cur->token = 10;
     } else if (cur->token == -1){
       cur -> token = 2;
     }
     cur=cur->next;
+  }
+}
+
+// the struct strbuf * inserted here shall be the initial 
+//struct strbuf * of the linked list and being cleaned up and tokenised
+void format_insert_spaces(struct strbuf *sbptr)
+{
+  struct strbuf *cur = sbptr;
+  while(cur->next != NULL){
+    if (cur->token == 1){
+      strbuf_presert_n_spaces_before(cur, 4);
+      cur = cur->next;
+    }
+    cur = cur->next;
   }
 }

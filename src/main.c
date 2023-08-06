@@ -14,9 +14,10 @@ int read_to_strbuf(struct strbuf* sbptr, char * name)
   int fd = open(name, O_RDONLY);
 
   struct strbuf *cur = sbptr;
+  struct strbuf *initial = sbptr;
 
   char tmp = ' ';
-  char pre; 
+  char pre= '\0'; 
   while (read(fd, &tmp, 1)>0){
     int newList = 0;
     if (tmp == ' ' || tmp == '\n' || tmp == '\t'|| pre == ' ' || pre == '\n' || pre == '\t')
@@ -30,6 +31,9 @@ int read_to_strbuf(struct strbuf* sbptr, char * name)
     strbuf_append(cur, &tmp, 1);
     pre = tmp;
   }
+
+  // During read process null strbuf may be introduced.
+  strip_null_strbuf(initial);
 
   if (close(fd)==-1){
     char errorString[64]; 
@@ -137,13 +141,11 @@ void strbuf_tokenisation(struct strbuf *sbptr)
 
 void format_strbuf_list(struct strbuf **sbpp)
 {
-
   struct strbuf * sbp = *sbpp;
-  strip_trailing_space(sbp);
+  strip_null_strbuf(sbp);
   strip_initial_space(sbp);
+  strip_trailing_space(sbp);
   strip_repetitive_linebreaks(sbp);
-  
-  strip_null_strbuf(sbpp);
   
   strbuf_tokenisation(sbp);
 }

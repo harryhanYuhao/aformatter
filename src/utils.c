@@ -66,7 +66,7 @@ void strbuf_insert_after(struct strbuf *location, struct strbuf *content)
 
 // check if strbuf contains nothing.
 
-int strbuf_is_empty_string(struct strbuf *sb)
+int strbuf_is_null_strbuf(struct strbuf *sb)
 {
   if (sb->next == NULL)
     return 1;
@@ -97,7 +97,7 @@ int strbuf_is_section(struct strbuf *sb)
   if (sb == NULL || sb->sptr == NULL)
     return 0;
   if(sb->len > 1 && *(sb->sptr) == '.')
-  //   return 1;
+    return 1;
   return 0;
 }
 
@@ -178,22 +178,20 @@ void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
 
 // Starting from sbptr, delete all null strbuf
 // if sbptr itself is null, modified it so that it become the closest non-null strbuf
-void strip_null_strbuf(struct strbuf ** sbpp)
+int strip_null_strbuf(struct strbuf * sbp)
 {
-  // first remove and modifies sbpp if it is null
-  struct strbuf *cur = *sbpp;
-  while(strbuf_is_empty_string(cur)){
-    struct strbuf *tmp = cur;
-    cur = cur->next;
-    strbuf_free(tmp);
-  }
-  *(sbpp) = cur;
-  while (cur->next->next != NULL){
-    if (strbuf_is_empty_string(cur->next)){
-      strbuf_remove_next(cur);
+  int res = 0;
+  struct strbuf *cur = sbp;
+  while(cur->next != NULL){
+    if (strbuf_is_null_strbuf(cur)){
+      ++res;
+      strbuf_self_delete(cur);
     }
-    cur = cur->next;
+    else{
+      cur = cur->next;
+    }
   }
+  return res;
 }
 
 void print_strbuf_list(struct strbuf *sb)
@@ -219,7 +217,7 @@ void debug_print(struct strbuf *sb)
     if (cur->sptr!=NULL){
       // syscall, requires unistd.h
       if (*(cur->sptr)==10){
-        write(STDOUT_FILENO, "!\n", 2);
+        write(STDOUT_FILENO, "!\\n\n", 4);
       } else{
         char tmp[5];
         snprintf(tmp, 5, "!%lu", cur->len);

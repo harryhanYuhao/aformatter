@@ -1,4 +1,7 @@
 **aformatter
+**.bak
+**sample
+**example.asm
 *.latexmk
 *.aux
 *.log

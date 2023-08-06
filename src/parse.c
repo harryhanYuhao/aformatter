@@ -93,8 +93,10 @@ void strbuf_tokenisation(struct strbuf *sbptr)
       continue;
     } else if (strbuf_is_linebreak(cur)){
       cur->token = 10;
-    } else if (cur->token == -1){
-      cur -> token = 2;
+      // mark the next element be the first of the line
+      cur->next->token+=100;
+    } else { 
+      cur -> token +=3;  // makes tokens to be 2 for normal ones
     }
     cur=cur->next;
   }
@@ -106,8 +108,21 @@ void format_insert_spaces(struct strbuf *sbptr)
 {
   struct strbuf *cur = sbptr;
   while(cur->next != NULL){
+    int tmp;
     if (cur->token == 1){
       strbuf_presert_n_spaces_before(&cur, 4);
+    } 
+    else if (cur->token == 2 && (tmp = 12-cur->len) > 0){
+      strbuf_insert_n_spaces_after(cur, tmp);
+      cur = cur->next;
+    }
+    else if (cur ->token == 3){  // labels do nothing
+    }
+    else if (cur -> token == 102 ){
+      strbuf_presert_n_spaces_before(&cur, 4);
+      tmp = 12-cur->len;
+      if (tmp > 0 && tmp <= 12)
+        strbuf_insert_n_spaces_after(cur, tmp);
     }
     cur = cur->next;
   }

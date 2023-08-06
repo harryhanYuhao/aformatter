@@ -95,6 +95,9 @@ void strbuf_presert_before(struct strbuf **location, struct strbuf * content)
 
 void strbuf_presert_n_spaces_before(struct strbuf **sbptr, int n)
 {
+  if (n>12)
+    exit_program("strbuf_presert_n_spaces_before() failed! Maximum numver of space is 12", 1);
+    
   struct strbuf *spaces;
   strbuf_init(&spaces);
   spaces->len = n;
@@ -102,6 +105,21 @@ void strbuf_presert_n_spaces_before(struct strbuf **sbptr, int n)
   char tmp[12] = "            ";
   memmove(spaces->sptr, tmp, n);
   strbuf_presert_before(sbptr, spaces);
+}
+
+
+void strbuf_insert_n_spaces_after(struct strbuf *sbptr, int n)
+{
+  if (n>12)
+    exit_program("strbuf_presert_n_spaces_before() failed! Maximum numver of space is 12", 1);
+
+  struct strbuf *spaces;
+  strbuf_init(&spaces);
+  spaces->len = n;
+  spaces->sptr = (char *) calloc(n, 1);
+  char tmp[12] = "            ";
+  memmove(spaces->sptr, tmp, n);
+  strbuf_insert_after(sbptr, spaces);
 }
 
 // check if strbuf contains nothing.
@@ -244,9 +262,24 @@ int strip_null_strbuf(struct strbuf * sbp)
   return res;
 }
 
-void print_strbuf_list(struct strbuf *sb)
+void print_strbuf_list(struct strbuf *sb, int fd)
 {
   struct strbuf *cur = sb;
+  while (1){
+    if (cur->sptr!=NULL){
+      // syscall, requires unistd.h
+      write(fd, cur->sptr, cur->len);
+    }
+    if (cur->next==NULL)
+      break;
+    cur=cur->next;
+  }
+}
+
+void debug_print(struct strbuf *sb)
+{
+  struct strbuf *cur = sb;
+  // print all tokens with ! to separate them
   while (1){
     if (cur->sptr!=NULL){
       // syscall, requires unistd.h
@@ -258,11 +291,8 @@ void print_strbuf_list(struct strbuf *sb)
       break;
     cur=cur->next;
   }
-}
-
-void debug_print(struct strbuf *sb)
-{
-  struct strbuf *cur = sb;
+  cur = sb;
+  // print the length of the token with ! to separate them
   while (1){
     if (cur->sptr!=NULL){
       // syscall, requires unistd.h

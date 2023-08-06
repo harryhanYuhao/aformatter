@@ -17,6 +17,8 @@
 // 3 labels
 // 10 new line
 // 32 space 
+// 100 : it is the first of the line 
+// 101 : it is the section header at the fisrt of the line
 
 // for holding each line of the string text
 // len is number of character excluding \0
@@ -49,11 +51,12 @@ int strbuf_is_label(struct strbuf *);
 void strbuf_insert_after(struct strbuf *, struct strbuf *);
 void strbuf_presert_before(struct strbuf **, struct strbuf *);
 void strbuf_presert_n_spaces_before(struct strbuf **, int);
+void strbuf_insert_n_spaces_after(struct strbuf *, int);
 void strbuf_delete_between(struct strbuf *, struct strbuf *);
 int strip_null_strbuf(struct strbuf *);
 void strbuf_remove_next(struct strbuf *);
 void strbuf_free(struct strbuf *);
-void print_strbuf_list(struct strbuf *);
+void print_strbuf_list(struct strbuf *, int);
 void debug_print(struct strbuf *);
 
 int read_to_strbuf(struct strbuf *, char*);

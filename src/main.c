@@ -36,13 +36,36 @@ void test(void){
   }
   // strbuf_delete_between(list[0], list[2]);
 
-  print_strbuf_list(*list);
+  print_strbuf_list(*list, STDOUT_FILENO);  // 1 is stdout
 }
 
 void init(void)
 {
   init_global_variables();
 }
+
+void create_backup(char *name, struct strbuf *sbptr)
+{
+  int fd = open(name, O_TRUNC|O_RDWR|O_CREAT, 00666);
+
+  struct strbuf *cur = sbptr;
+  while (1){
+    if (cur->sptr!=NULL){
+      // syscall, requires unistd.h
+      write(fd, cur->sptr, cur->len);
+    }
+    if (cur->next==NULL)
+      break;
+    cur=cur->next;
+  }
+
+  if (close(fd)==-1){
+    char errorString[64]; 
+    snprintf(errorString, 64, "fail to open file %s", name);
+    exit_program(errorString, -1);
+  }
+}
+
 int main(int argc, char * argv[])
 {
   init();
@@ -56,15 +79,33 @@ int main(int argc, char * argv[])
   strbuf_init(&sbp);          
 
   read_to_strbuf(sbp, argv[1]);
-  for (int i = 0; i < 11; i++){
-    strbuf_self_delete(sbp);
-  }
+  
+  char *bkname = (char *) calloc(strlen(argv[1]+4), 1);
+  sprintf(bkname, "%s.bak", argv[1]);
+  printf("%s\n", bkname);
+
+  create_backup(bkname, sbp);
+
   format_strbuf_list(&sbp);             
 
-  print_strbuf_list(sbp);  
-  debug_print(sbp);
+  // overwrite original file
+  int fd = open(argv[1], O_TRUNC|O_RDWR);
+  print_strbuf_list(sbp, fd);  
+  if (close(fd)==-1){
+    char errorString[64]; 
+    snprintf(errorString, 64, "fail to open file %s", argv[1]);
+    exit_program(errorString, -1);
+  }
 
-  debug_track();
+  // print to stdout
+  print_strbuf_list(sbp, STDOUT_FILENO); 
+  
+  printf(
+    "%sNOTE:%sThe preceding lines overwrite the file %s; "
+    "the back up of it was created as %s%s%s.\n",
+    "\x1b[31;1m","\x1b[0m",argv[1], "\x1b[3m",bkname,"\x1b[0m");
+  
+  // debug_print(sbp);
 
   return 0;
 }

@@ -2,10 +2,10 @@
 #include "globals.h"
 // remove all spaces in a line if this line consist of only spaces
 // the line is retained 
-void strip_trailing_space(struct strbuf * sbptr)
+void strip_trailing_space(struct strbuf * sb)
 {
-  struct strbuf *cur = sbptr;
-  struct strbuf *poke = sbptr;
+  struct strbuf *cur = sb;
+  struct strbuf *poke = sb;
 
   for (;cur->next != NULL; cur = cur->next){
     poke = cur->next;
@@ -17,10 +17,10 @@ void strip_trailing_space(struct strbuf * sbptr)
   }
 }
 
-void strip_initial_space(struct strbuf * sbptr)
+void strip_initial_space(struct strbuf * sb)
 {
-  struct strbuf *cur = sbptr;
-  struct strbuf *poke = sbptr;
+  struct strbuf *cur = sb;
+  struct strbuf *poke = sb;
   //
   // first take care of the space at the beginning of the document
   while (strbuf_is_space(cur)){
@@ -41,9 +41,9 @@ void strip_initial_space(struct strbuf * sbptr)
 
 // remove extra line breaks if there is three or more consecutive line breaks
 // reduce number of consecutive linebreaks to two
-void strip_repetitive_linebreaks(struct strbuf * sbptr)
+void strip_repetitive_linebreaks(struct strbuf * sb)
 {
-  struct strbuf * cur = sbptr;
+  struct strbuf * cur = sb;
   while (1){
     if (strbuf_is_linebreak(cur)){
       while 
@@ -61,9 +61,9 @@ void strip_repetitive_linebreaks(struct strbuf * sbptr)
 }
 
 /// assigne token code for each strbuf .
-void strbuf_tokenisation(struct strbuf *sbptr)
+void strbuf_tokenisation(struct strbuf *sb)
 {
-  struct strbuf *cur = sbptr;
+  struct strbuf *cur = sb;
   int tmp;
   while (cur->next!=NULL){
     if (strbuf_is_null_strbuf(cur)){
@@ -104,9 +104,9 @@ void strbuf_tokenisation(struct strbuf *sbptr)
 
 // the struct strbuf * inserted here shall be the initial 
 //struct strbuf * of the linked list and being cleaned up and tokenised
-void format_insert_spaces(struct strbuf *sbptr)
+void format_insert_spaces(struct strbuf *sb)
 {
-  struct strbuf *cur = sbptr;
+  struct strbuf *cur = sb;
   while(cur->next != NULL){
     int tmp;
     if (cur->token == 1){

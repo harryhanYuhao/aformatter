@@ -56,7 +56,8 @@ void strbuf_delete_between(struct strbuf *, struct strbuf *);
 int strip_null_strbuf(struct strbuf *);
 void strbuf_remove_next(struct strbuf *);
 void strbuf_free(struct strbuf *);
-void print_strbuf_list(struct strbuf *, int);
+void save_to_file(char *, struct strbuf *);
+void print_strbuf_list(struct strbuf *);
 void debug_print(struct strbuf *);
 
 int read_to_strbuf(struct strbuf *, char*);

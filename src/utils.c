@@ -93,7 +93,7 @@ void strbuf_presert_before(struct strbuf **location, struct strbuf * content)
   *(location) = cur->next;
 }
 
-void strbuf_presert_n_spaces_before(struct strbuf **sbptr, int n)
+void strbuf_presert_n_spaces_before(struct strbuf **sb, int n)
 {
   if (n>12)
     exit_program("strbuf_presert_n_spaces_before() failed! Maximum numver of space is 12", 1);
@@ -104,11 +104,11 @@ void strbuf_presert_n_spaces_before(struct strbuf **sbptr, int n)
   spaces->sptr = (char *) calloc(n, 1);
   char tmp[12] = "            ";
   memmove(spaces->sptr, tmp, n);
-  strbuf_presert_before(sbptr, spaces);
+  strbuf_presert_before(sb, spaces);
 }
 
 
-void strbuf_insert_n_spaces_after(struct strbuf *sbptr, int n)
+void strbuf_insert_n_spaces_after(struct strbuf *sb, int n)
 {
   if (n>12)
     exit_program("strbuf_presert_n_spaces_before() failed! Maximum numver of space is 12", 1);
@@ -119,7 +119,7 @@ void strbuf_insert_n_spaces_after(struct strbuf *sbptr, int n)
   spaces->sptr = (char *) calloc(n, 1);
   char tmp[12] = "            ";
   memmove(spaces->sptr, tmp, n);
-  strbuf_insert_after(sbptr, spaces);
+  strbuf_insert_after(sb, spaces);
 }
 
 // check if strbuf contains nothing.
@@ -243,13 +243,13 @@ void strbuf_delete_between(struct strbuf *begin, struct strbuf *end)
   }
 }
 
-// Starting from sbptr, delete all null strbuf
-// if sbptr itself is null, modified it so that it become the closest non-null strbuf
+// Starting from sb, delete all null strbuf
+// if sb itself is null, modified it so that it become the closest non-null strbuf
 // return the number fo null strbuf stripped.
-int strip_null_strbuf(struct strbuf * sbp)
+int strip_null_strbuf(struct strbuf * sb)
 {
   int res = 0;
-  struct strbuf *cur = sbp;
+  struct strbuf *cur = sb;
   while(cur->next != NULL){
     if (strbuf_is_null_strbuf(cur)){
       ++res;
@@ -262,13 +262,38 @@ int strip_null_strbuf(struct strbuf * sbp)
   return res;
 }
 
-void print_strbuf_list(struct strbuf *sb, int fd)
+// write the content of the linked list to file name.
+// if `name` does not exist, it will be created
+// if `name` already exists, it will be truncated
+void save_to_file(char *name, struct strbuf *sbptr)
+{
+  int fd = open(name, O_TRUNC|O_RDWR|O_CREAT, 00666);
+
+  struct strbuf *cur = sbptr;
+  while (1){
+    if (cur->sptr!=NULL){
+      // syscall, requires unistd.h
+      write(fd, cur->sptr, cur->len);
+    }
+    if (cur->next==NULL)
+      break;
+    cur=cur->next;
+  }
+
+  if (close(fd)==-1){
+    char errorString[64]; 
+    snprintf(errorString, 64, "fail to open file %s", name);
+    exit_program(errorString, -1);
+  }
+}
+
+void print_strbuf_list(struct strbuf *sb)
 {
   struct strbuf *cur = sb;
   while (1){
     if (cur->sptr!=NULL){
       // syscall, requires unistd.h
-      write(fd, cur->sptr, cur->len);
+      write(STDOUT_FILENO, cur->sptr, cur->len);
     }
     if (cur->next==NULL)
       break;
@@ -317,12 +342,12 @@ void debug_print(struct strbuf *sb)
 // (excluding spaces and new lines)
 // a single space and a single linebreak are considered as tokens
 // struct strbuf* tbptr must be a pointer pointed to an initialized strbuf
-int read_to_strbuf(struct strbuf* sbptr, char * name)
+int read_to_strbuf(struct strbuf* sb, char * name)
 {
   int fd = open(name, O_RDONLY);
 
-  struct strbuf *cur = sbptr;
-  struct strbuf *initial = sbptr;
+  struct strbuf *cur = sb;
+  struct strbuf *initial = sb;
 
   char tmp = ' ';
   char pre= '\0'; 

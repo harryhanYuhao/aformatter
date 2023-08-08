@@ -89,8 +89,7 @@ void strbuf_tokenisation(struct strbuf *sb)
     else if (strbuf_is_space(cur)){
       // cur->token = 32;
       // when it deletes itself it become the next token: need not cur = cur->next
-      strbuf_self_delete(cur);
-      continue;
+      cur -> token = -2;
     } else if (strbuf_is_linebreak(cur)){
       cur->token = 10;
       // mark the next element be the first of the line
@@ -99,6 +98,18 @@ void strbuf_tokenisation(struct strbuf *sb)
       cur -> token +=3;  // makes tokens to be 2 for normal ones
     }
     cur=cur->next;
+  }
+}
+
+void delete_tobe_deleted(struct strbuf *sb)
+{
+  struct strbuf *cur = sb;
+  while(cur->next != NULL){
+    if (cur->token == -2){
+      strbuf_self_delete(cur);
+      continue;
+    }
+    cur = cur->next;
   }
 }
 

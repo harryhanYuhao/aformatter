@@ -145,7 +145,8 @@ int strbuf_is_linebreak(struct strbuf *sb){
 int strbuf_is_space(struct strbuf *sb){
   if (sb == NULL)
     return 0;
-  if(sb->len == 1 && *(sb->sptr) == 32)
+  // 32 space, 9 horizantal tab
+  if(sb->len == 1 && (*(sb->sptr) == 32 || *(sb->sptr) == 9))
     return 1;
   return 0;
 }

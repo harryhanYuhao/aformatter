@@ -10,11 +10,13 @@
 #include <string.h>
 
 // token status:
+// -2 to be deleted 
 // -1 undefined
 // 0 comments: it belowns to comments
 // 1 section header
 // 2 keywords, register, etc
 // 3 labels
+// 68 to be delted, (68 is ascii code of D)
 // 10 new line
 // 32 space 
 // 100 : it is the first of the line 

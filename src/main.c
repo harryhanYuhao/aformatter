@@ -14,6 +14,7 @@ void format_strbuf_list(struct strbuf *sbp)
   strip_repetitive_linebreaks(sbp);
   
   strbuf_tokenisation(sbp);
+  delete_tobe_deleted(sbp);
   format_insert_spaces(sbp);
 }
 
@@ -75,6 +76,6 @@ int main(int argc, char * argv[])
   //   "the back up of it was created as %s%s%s.\n",
   //   "\x1b[31;1m","\x1b[0m",argv[1], "\x1b[3m",bkname,"\x1b[0m");
   
-  // debug_print(sbp);
+  debug_print(sbp);
   return 0;
 }

@@ -193,19 +193,64 @@ static int strbuf_to_endofline(struct strbuf *sptr){
   // the comment sign
 // exclusive on both end
 // neither the line break token nor the current token counts
-int strbuf_is_comment(struct strbuf *sptr){
+int strbuf_is_comment(struct strbuf *sb){
   int res = 0;
-  struct strbuf *cur = sptr;
-  if (comment_string_length == 1){
-    if(cur->len == 1 && *(cur->sptr) == comment_string_first_char){
+  struct strbuf *cur = sb;
+  if (COMMENT_STRING_LENGTH == 1){
+    if(cur->len == 1 && *(cur->sptr) == COMMENT_STRING_FIRST_CHAR){
       res = strbuf_to_endofline(cur);
     }
   }
-  else if (comment_string_length == 2){
-    if(cur->len == 1 && *(cur->sptr) == comment_string_first_char && *(cur->next->sptr) == comment_string_second_char)
+  else if (COMMENT_STRING_LENGTH == 2){
+    if(cur->len == 1 && *(cur->sptr) == COMMENT_STRING_FIRST_CHAR && *(cur->next->sptr) == COMMENT_STRING_SECOND_CHAR)
     {
       res = strbuf_to_endofline(cur);
     }
+  }
+  return res;
+}
+
+static int strbuf_to_next_double_quotation(struct strbuf *sptr){
+  int counter = 0;
+  struct strbuf *cur = sptr;
+  while (cur->next != NULL){
+    if (*(cur->sptr) == '"'){
+      break;
+    }
+    ++counter;
+    cur = cur->next;
+  }
+  return counter;
+}
+
+int strbuf_is_double_quotation_mark(struct strbuf *sb){
+  int res = 0;
+  struct strbuf *cur = sb;
+  if(cur->len == 1 && *(cur->sptr) == '"'){
+    res = strbuf_to_next_double_quotation(cur->next);
+  }
+  return res;
+}
+
+
+static int strbuf_to_next_single_quotation(struct strbuf *sptr){
+  int counter = 0;
+  struct strbuf *cur = sptr;
+  while (cur->next != NULL){
+    if (*(cur->sptr) == '\''){
+      break;
+    }
+    ++counter;
+    cur = cur->next;
+  }
+  return counter;
+}
+
+int strbuf_is_single_quotation_mark(struct strbuf *sb){
+  int res = 0;
+  struct strbuf *cur = sb;
+  if(cur->len == 1 && *(cur->sptr) == '\''){
+    res = strbuf_to_next_single_quotation(cur->next);
   }
   return res;
 }
@@ -356,7 +401,7 @@ int read_to_strbuf(struct strbuf* sb, char * name)
     int newList = 0;
     // note in the algorithm the first strbuf will be a null strbuf
     // it needs to be removed 
-    if (tmp == ' ' || tmp == '\n' || tmp == '\t'|| pre == ' ' || pre == '\n' || pre == '\t')
+    if (tmp == ' ' || tmp == '\n' || tmp == '\t'|| pre == ' ' || pre == '\n' || pre == '\t' || tmp == '"' || pre == '"')
       newList = 1;
     if(newList){
       newList = 0;

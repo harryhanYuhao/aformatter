@@ -79,6 +79,16 @@ void strbuf_tokenisation(struct strbuf *sb)
       for (int i = 0; i < tmp-1; i++){
         strbuf_merge(cur, cur->next);
       }
+    } else if ((tmp = strbuf_is_double_quotation_mark(cur))){
+      cur -> token = 4;
+      for (int i = 0; i < tmp; i++){
+        strbuf_merge(cur, cur->next);
+      }
+    } else if ((tmp = strbuf_is_single_quotation_mark(cur))){
+      cur -> token = 4;
+      for (int i = 0; i < tmp; i++){
+        strbuf_merge(cur, cur->next);
+      }
     }
     else if (strbuf_is_section(cur)){
       cur->token = 1;

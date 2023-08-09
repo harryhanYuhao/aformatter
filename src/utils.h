@@ -16,6 +16,7 @@
 // 1 section header
 // 2 keywords, register, etc
 // 3 labels
+// between quotation mark
 // 68 to be delted, (68 is ascii code of D)
 // 10 new line
 // 32 space 
@@ -49,6 +50,8 @@ int strbuf_is_linebreak(struct strbuf *);
 int strbuf_is_space(struct strbuf *);
 int strbuf_is_section(struct strbuf *);
 int strbuf_is_comment(struct strbuf *);
+int strbuf_is_double_quotation_mark(struct strbuf *);
+int strbuf_is_single_quotation_mark(struct strbuf *);
 int strbuf_is_label(struct strbuf *);
 void strbuf_insert_after(struct strbuf *, struct strbuf *);
 void strbuf_presert_before(struct strbuf **, struct strbuf *);

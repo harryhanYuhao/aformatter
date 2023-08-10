@@ -61,6 +61,7 @@ void strbuf_delete_between(struct strbuf *, struct strbuf *);
 int strip_null_strbuf(struct strbuf *);
 void strbuf_remove_next(struct strbuf *);
 void strbuf_free(struct strbuf *);
+void strbuf_free_list(struct strbuf *);
 void save_to_file(char *, struct strbuf *);
 void print_strbuf_list(struct strbuf *);
 void debug_print(struct strbuf *);

@@ -132,6 +132,7 @@ void format_insert_spaces(struct strbuf *sb)
     int tmp;
     if (cur->token == 1){
       strbuf_presert_n_spaces_before(&cur, 4);
+      strbuf_insert_n_spaces_after(cur, 1);
     } 
     else if (cur->token == 2 && (tmp = 12-cur->len) > 0){
       strbuf_insert_n_spaces_after(cur, tmp);

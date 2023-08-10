@@ -263,6 +263,16 @@ void strbuf_free(struct strbuf *sb)
   free(sb);
 }
 
+void strbuf_free_list(struct strbuf *sb)
+{
+  struct strbuf *cur = sb;
+  while (cur != NULL){
+    struct strbuf *tmp = cur->next;
+    strbuf_free(cur);
+    cur = tmp;
+  }
+}
+
 // remove the next of the linked list, while linking the first the the next's next
 void strbuf_remove_next(struct strbuf * sb)
 {

@@ -6,8 +6,7 @@
 #include "globals.h"
 #include "parse.h"
 
-
-void format_file(char *filename)
+ format_file(char *filename)
 {
   struct strbuf *sbp;
   strbuf_init(&sbp);          

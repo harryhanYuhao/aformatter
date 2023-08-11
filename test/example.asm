@@ -12,9 +12,9 @@
 
 
 # exit syscall
-    mov         $60,        %rax        
-    mov         %rbx,       %rdi        
-    syscall     
+ mov  $60,    %rax        
+ mov       %rbx,       %rdi        
+   syscall     
 
     .data
 message:

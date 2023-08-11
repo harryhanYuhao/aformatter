@@ -1,16 +1,16 @@
+#include "globals.h"
 #include "utils.h"
+
+struct config CF;
+struct config *PTCF = &CF;
 
 void debug_track(void)
 {
   return;
 }
 
-int COMMENT_STRING_LENGTH;
-char COMMENT_STRING_FIRST_CHAR;
-char COMMENT_STRING_SECOND_CHAR;
-
 void init_global_variables(void){
-  COMMENT_STRING_LENGTH = 1;
-  COMMENT_STRING_FIRST_CHAR = '#';
-  COMMENT_STRING_SECOND_CHAR = ';';
+  PTCF->COMMENT_STRING_LENGTH = 1;
+  PTCF->COMMENT_STRING_FIRST_CHAR = '#';
+  PTCF->COMMENT_STRING_SECOND_CHAR = ';';
 }

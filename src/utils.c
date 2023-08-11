@@ -196,13 +196,13 @@ static int strbuf_to_endofline(struct strbuf *sptr){
 int strbuf_is_comment(struct strbuf *sb){
   int res = 0;
   struct strbuf *cur = sb;
-  if (COMMENT_STRING_LENGTH == 1){
-    if(cur->len == 1 && *(cur->sptr) == COMMENT_STRING_FIRST_CHAR){
+  if (PTCF->COMMENT_STRING_LENGTH == 1){
+    if(cur->len == 1 && *(cur->sptr) == PTCF->COMMENT_STRING_FIRST_CHAR){
       res = strbuf_to_endofline(cur);
     }
   }
-  else if (COMMENT_STRING_LENGTH == 2){
-    if(cur->len == 1 && *(cur->sptr) == COMMENT_STRING_FIRST_CHAR && *(cur->next->sptr) == COMMENT_STRING_SECOND_CHAR)
+  else if (PTCF->COMMENT_STRING_LENGTH == 2){
+    if(cur->len == 1 && *(cur->sptr) == PTCF->COMMENT_STRING_FIRST_CHAR && *(cur->next->sptr) == PTCF->COMMENT_STRING_SECOND_CHAR)
     {
       res = strbuf_to_endofline(cur);
     }

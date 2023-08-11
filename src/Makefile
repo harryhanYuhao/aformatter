@@ -14,7 +14,7 @@ RED=\033[0;31m
 BLUE=\033[0;34m
 NC=\033[0m
 
-aformatter: main.o utils.o globals.o parse.o
+aformatter: main.o utils.o globals.o parse.o flags.o
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Linking: Producing executable$(NC)"
 	@$(CC) $(CFLAGS) -o aformatter main.o utils.o globals.o parse.o
@@ -29,7 +29,7 @@ main.o: main.c utils.h globals.h
 utils.o: utils.c utils.h globals.h
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Compiling: utils.c$(NC)"
-	@$(CC) $(CFLAGS) -c utils.c
+	@$(CC) $(CFLAGS) -c utils.c 
 
 globals.o: globals.c globals.h
 	@echo -e "------------------------------------------"
@@ -40,6 +40,11 @@ parse.o: parse.c parse.h
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Compiling: parse.c$(NC)"
 	@$(CC) $(CFLAGS) -c parse.c
+
+flags.o: flags.c flags.h
+	@echo -e "------------------------------------------"
+	@echo -e "$(BLUE)Compiling: flags.c$(NC)"
+	@$(CC) $(CFLAGS) -c flags.c
 
 clean:
 	rm -f *.o aformatter

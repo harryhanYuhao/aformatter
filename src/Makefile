@@ -17,7 +17,7 @@ NC=\033[0m
 aformatter: main.o utils.o globals.o parse.o flags.o
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Linking: Producing executable$(NC)"
-	@$(CC) $(CFLAGS) -o aformatter main.o utils.o globals.o parse.o
+	@$(CC) $(CFLAGS) -o aformatter main.o utils.o globals.o parse.o flags.o
 	@echo -e "------------------------------------------"
 
 main.o: main.c utils.h globals.h

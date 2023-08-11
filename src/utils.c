@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "globals.h"
 
 void strbuf_init(struct strbuf **sb)
 {
@@ -8,6 +7,17 @@ void strbuf_init(struct strbuf **sb)
   (*sb)->sptr = NULL;
   (*sb)->next = NULL;
   (*sb)->token = -1;
+}
+
+struct strbuf *get_n_strbuf(struct strbuf *sb, int n)
+{
+  struct strbuf* cur = sb;
+  for (int i = 0; i < n; i++){
+    if (cur == NULL) 
+      return NULL;
+    cur = cur->next;
+  }
+  return cur;
 }
 
 // needs improvement:
@@ -126,7 +136,7 @@ void strbuf_insert_n_spaces_after(struct strbuf *sb, int n)
 
 int strbuf_is_null_strbuf(struct strbuf *sb)
 {
-  if (sb->next == NULL)
+  if (sb->sptr == NULL)
     return 1;
   if (sb->len==0)
     return 1;
@@ -434,6 +444,16 @@ int read_to_strbuf(struct strbuf* sb, char * name)
   return 0;
 }
 
+int determine_flag_type(char *in)
+{
+  if (strlen(in) <= 0)
+    return 0;  // nothing
+  if (*in == '-' && *(in+1) == '-')
+    return 2;  // -- flags
+  if (*in == '-')  // - flags
+    return 1;
+  return 3; // filename
+}
 
 // if exit_num > 0, there is no system error 
 // or system error was catched by code.
@@ -448,4 +468,9 @@ void exit_program(char *s, int exit_num)
     printf("%s\n", s);
     exit(1);
   }
+}
+
+void debug_track(void)
+{
+  return;
 }

@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "globals.h"
 #include "parse.h"
+#include "flags.h"
 
 
 void format_file(char *filename)
@@ -22,12 +23,15 @@ void format_file(char *filename)
   format_insert_spaces(sbp);
 
   /* create formatted file */
-  char *bkname = (char *) calloc(strlen(filename)+10, 1);
-  sprintf(bkname, "formatted_%s", filename);
-  save_to_file(bkname, sbp);
+  char *formatted = (char *) calloc(strlen(filename)+10, 1);
+  sprintf(formatted, "formatted_%s", filename);
+  save_to_file(formatted, sbp);
 
+  printf("Formatting File\x1b[1m %s \x1b[0m\n", filename);
+  printf("----------------------\n");
   // print to stdout
   print_strbuf_list(sbp);
+  printf("----------------------\n");
   strbuf_free_list(sbp);
 
   // debug_print(sbp);
@@ -67,7 +71,16 @@ int main(int argc, char * argv[])
     return 0;
   }
 
-  format_file(argv[1]);             
+  process_input(argc, argv);  
+  // File_name must be NULL-terminated
+  struct strbuf *cur = FILENAMES;
+  while (cur != NULL){
+    if (cur->sptr != NULL){
+      format_file(cur->sptr);
+    }
+    cur = cur->next;
+  }
+  // format_file(argv[1]);             
 
   // printf(
   //   "%sNOTE:%sThe preceding lines overwrite the file %s; "

@@ -3,45 +3,15 @@
 
 // for open() syscall in int read_to_strbuf()
 #include <fcntl.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-// token status:
-// -2 to be deleted 
-// -1 undefined
-// 0 comments: it belowns to comments
-// 1 section header
-// 2 keywords, register, etc
-// 3 labels
-// between quotation mark
-// 68 to be delted, (68 is ascii code of D)
-// 10 new line
-// 32 space 
-// 100 : it is the first of the line 
-// 101 : it is the section header at the fisrt of the line
-
-// for holding each line of the string text
-// len is number of character excluding \0
-// It is a linked-list
-struct strbuf{
-  uint64_t len;  // the length of the current string
-  char *sptr; // string pointer
-  struct strbuf* next;
-  char token;  // record the token status of this string
-};
-
-// for holding the whole file of the text
-// len is number of strbuf presented in the linked-lisE
-// struct textbuf{
-//   uint64_t len;
-//   // a pointer to strbuf, the start of the linked-list
-//   struct strbuf *strings;
-// };
+#include "globals.h"
 
 void strbuf_init(struct strbuf **);
+struct strbuf *get_n_strbuf(struct strbuf *, int);
 void strbuf_append(struct strbuf *, char *, int);
 void strbuf_merge(struct strbuf *, struct strbuf *);
 void strbuf_self_delete(struct strbuf *);
@@ -68,6 +38,13 @@ void debug_print(struct strbuf *);
 
 int read_to_strbuf(struct strbuf *, char*);
 
+// string parsing and manipulation
+
+// passing a null-terminated string. 
+// return 1 for - flags. 2 for -- flags, and 3 for filename, 0 for nothing
+int determine_flag_type(char *);
+
 void exit_program(char *, int);
 
+void debug_track(void);
 #endif // for utils.h

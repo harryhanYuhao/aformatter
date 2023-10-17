@@ -14,10 +14,12 @@ RED=\033[0;31m
 BLUE=\033[0;34m
 NC=\033[0m
 
-aformatter: main.o utils.o globals.o parse.o flags.o
+OBJECTS=main.o utils.o globals.o parse.o flags.o
+
+aformatter: $(OBJECTS)
 	@echo -e "------------------------------------------"
 	@echo -e "$(BLUE)Linking: Producing executable$(NC)"
-	@$(CC) $(CFLAGS) -o aformatter main.o utils.o globals.o parse.o flags.o
+	@$(CC) $(CFLAGS) -o aformatter $(OBJECTS)
 	@echo -e "------------------------------------------"
 
 main.o: main.c utils.h globals.h
@@ -47,9 +49,4 @@ flags.o: flags.c flags.h
 	@$(CC) $(CFLAGS) -c flags.c
 
 clean:
-	rm -f *.o aformatter
-
-
-
-
-
+	rm -f aformatter $(OBJECTS)
